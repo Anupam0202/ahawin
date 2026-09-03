@@ -1,17 +1,19 @@
 {
   "name": "ahawin",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "private": true,
   "type": "module",
   "description": "AhaWin turns handwritten mistakes into misconception twins learners teach back.",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "start": "node scripts/local-server.mjs",
     "check": "node --check scripts/local-server.mjs && node --check api/analyze.js && node --check api/health.js && node --check lib/core.js && node --check lib/rate-limit.js && node --check public/ui.js",
     "test": "node --test",
     "eval": "node scripts/evaluate.mjs",
     "verify:deployment": "node scripts/verify-deployment-layout.mjs",
-    "verify": "npm run check && npm test && npm run eval && npm run verify:deployment && bash scripts/secret-scan.sh"
+    "verify": "npm run check && npm test && npm run eval && npm run verify:deployment && bash scripts/secret-scan.sh",
+    "local": "node scripts/local-server.mjs"
   },
   "license": "MIT"
 }

@@ -118,7 +118,7 @@ Requirements: Node.js 20 or newer. There are no runtime package dependencies.
 ```bash
 cp .env.example .env
 # Add GEMINI_API_KEY to .env only if live analysis is needed.
-npm start
+npm run local
 ```
 
 Open `http://127.0.0.1:4173`. The guided sample works without credentials.
