@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AhaWin turns handwritten STEM mistakes into misconception twins learners teach back.">
+  <meta name="theme-color" content="#f7f8fb">
+  <title>AhaWin — Teach your mistake until it disappears</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css?v=6">
+  <script src="/app.js?v=4" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the learning experience</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="AhaWin home">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <span><strong>AhaWin</strong><small>reasoning repair</small></span>
+    </a>
+    <div class="header-actions">
+      <span class="api-chip" id="apiChip"><i id="statusDot" aria-hidden="true"></i><span id="apiStatus">Checking AI…</span></span>
+      <button class="icon-button" id="themeToggle" type="button" aria-label="Switch color theme" title="Switch color theme">
+        <span aria-hidden="true">◐</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>AI that makes learners do the explaining</span></div>
+        <h1 id="heroTitle">Your mistake just became <em>your tutor.</em></h1>
+        <p class="hero-lede">AhaWin reads handwritten reasoning, finds the earliest possible wrong turn, then builds a “misconception twin” that repeats the same rule. Catch it, teach it back, and prove the idea on a fresh problem.</p>
+        <div class="hero-actions">
+          <button class="button primary" id="heroDemo" type="button"><span aria-hidden="true">▶</span> Try the 60-second demo</button>
+          <a class="button secondary" href="#workbench">Analyze my work</a>
+        </div>
+        <div class="trust-row" role="group" aria-label="Product promises">
+          <span><b>01</b> No answer dumping</span>
+          <span><b>02</b> Evidence before diagnosis</span>
+          <span><b>03</b> Transfer before mastery</span>
+        </div>
+      </div>
+      <div class="hero-visual" role="img" aria-label="AhaWin transformation preview">
+        <div class="paper-card">
+          <div class="paper-top"><span>YOUR WORK</span><span class="synthetic">GUIDED DEMO</span></div>
+          <p>3(x − 2) = 12</p>
+          <p class="wrong-line">3x − 2 = 12 <mark>first turn</mark></p>
+          <p>3x = 14</p>
+          <p>x = 14/3</p>
+        </div>
+        <div class="trace-arrow" aria-hidden="true">→</div>
+        <div class="twin-preview">
+          <div class="avatar" aria-hidden="true">E</div>
+          <span class="mini-label">YOUR MISCONCEPTION TWIN</span>
+          <blockquote>“I multiplied the first term only. Will you teach me the rule?”</blockquote>
+          <div class="mismatch"><span>Original check <b>6</b></span><span>Echo’s check <b>10</b></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="loop-strip" aria-label="AhaWin learning loop">
+      <div><strong>01 · TRACE</strong><span>See the first divergence</span></div>
+      <div><strong>02 · TEST</strong><span>Make the rule fail visibly</span></div>
+      <div><strong>03 · TEACH</strong><span>Explain the repair aloud</span></div>
+      <div><strong>04 · TRANSFER</strong><span>Use it on a fresh problem</span></div>
+    </section>
+
+    <section class="workbench shell" id="workbench" aria-labelledby="workbenchTitle">
+      <div class="section-heading">
+        <span class="kicker">THE AHA LOOP</span>
+        <h2 id="workbenchTitle">Photograph the thinking, not just the answer.</h2>
+        <p>Use the guided sample instantly, or submit one problem and the learner’s steps. Live analysis sends the evidence to Gemini from the server only.</p>
+      </div>
+
+      <div class="workspace-grid">
+        <form class="evidence-card" id="analysisForm">
+          <div class="card-heading">
+            <span class="step-number">1</span>
+            <div><h3>Capture the reasoning</h3><p>One attempt. No account or learner identity required.</p></div>
+          </div>
+
+          <label class="field-label" for="subject">Subject</label>
+          <select id="subject" name="subject">
+            <option>Algebra</option><option>Geometry</option><option>Physics</option><option>Chemistry</option><option>General STEM</option>
+          </select>
+
+          <label class="field-label" for="problem">Original problem</label>
+          <textarea id="problem" name="problem" rows="2" maxlength="1800" placeholder="Example: Solve 3(x − 2) = 12"></textarea>
+
+          <label class="field-label" for="work">Learner’s written steps <span>optional with image</span></label>
+          <textarea id="work" name="work" rows="5" maxlength="1800" placeholder="Type the steps, preserving the learner’s reasoning…"></textarea>
+
+          <div class="upload-zone" id="dropZone">
+            <label class="sr-only" for="fileInput">Upload handwritten work image</label>
+            <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <button class="upload-button" id="chooseImage" type="button">
+              <span class="upload-icon" aria-hidden="true">↥</span>
+              <span><b>Upload handwritten work</b><small>JPG, PNG or WebP · resized locally · processed in memory</small></span>
+            </button>
+            <div class="preview-wrap hidden" id="previewWrap">
+              <img id="imagePreview" alt="Preview of submitted handwritten work">
+              <button class="remove-image" id="removeImage" type="button" aria-label="Remove uploaded image">×</button>
+            </div>
+          </div>
+
+          <div class="privacy-note"><span aria-hidden="true">◇</span><p><b>Private by design.</b> The prototype does not save submitted work. The Gemini key never reaches the browser.</p></div>
+          <div class="form-actions">
+            <button class="button primary wide" id="analyzeButton" type="submit">Build my misconception twin <span aria-hidden="true">→</span></button>
+            <button class="text-button" id="formDemo" type="button">Load the guided algebra demo instead</button>
+          </div>
+          <p class="analysis-status hidden" id="analysisStatus" role="alert" tabindex="-1"></p>
+        </form>
+
+        <aside class="method-card" aria-label="How AhaWin teaches">
+          <div class="method-rail"><span class="active">1</span><i></i><span>2</span><i></i><span>3</span></div>
+          <div class="method-copy">
+            <article><small>DIAGNOSE WITH EVIDENCE</small><h3>Find the first divergence</h3><p>Later arithmetic may be consistent. AhaWin looks for the earliest step that changed the meaning.</p></article>
+            <article><small>CREATE COGNITIVE CONFLICT</small><h3>Let the wrong rule fail visibly</h3><p>Echo repeats the inferred rule on a tiny counterexample. The learner catches it—not the AI.</p></article>
+            <article><small>VERIFY TRANSFER</small><h3>Teach it, then prove it</h3><p>A teach-back sentence and a fresh problem check whether the repaired idea transfers.</p></article>
+          </div>
+          <div class="method-footer"><b>Why not show the solution?</b><p>Because reaching an answer and retaining the underlying idea are not the same thing.</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="result-shell shell hidden" id="resultView" aria-live="polite" aria-labelledby="resultTitle">
+      <div class="result-topbar">
+        <div>
+          <span class="kicker">YOUR AHA TRACE</span>
+          <h2 id="resultTitle">Meet the rule hiding inside the work.</h2>
+        </div>
+        <div class="result-actions">
+          <button class="button secondary compact" id="copyCard" type="button">Copy repair card</button>
+          <button class="button ghost compact" id="startOver" type="button">Start over</button>
+        </div>
+      </div>
+
+      <div class="mode-banner" id="modeBanner"><span id="modePill">GUIDED DEMO</span><p id="modeWarning"></p></div>
+
+      <div class="result-grid">
+        <article class="trace-card panel">
+          <div class="panel-label"><span class="step-number small">1</span>REASONING TRACE <b class="confidence-chip" id="traceConfidence">—</b></div>
+          <div class="problem-line"><span id="resultSubject">Algebra</span><strong id="resultProblem"></strong></div>
+          <ol class="trace-list" id="traceList"></ol>
+          <div class="evidence-box" id="evidenceBox">
+            <span id="evidenceLabel">EARLIEST DEFENSIBLE DIVERGENCE</span>
+            <h3 id="diagnosisLabel"></h3>
+            <p id="diagnosisSummary"></p>
+            <small id="diagnosisUncertainty"></small>
+          </div>
+          <div class="trace-review" id="traceReview">
+            <div><span>HUMAN CHECKPOINT</span><b>Is this what the learner wrote?</b><p id="traceNote">Confirm the transcription before Echo uses it.</p></div>
+            <div class="review-actions">
+              <button class="button primary compact" id="confirmTrace" type="button">Yes, continue</button>
+              <button class="button ghost compact" id="editTrace" type="button">Edit input</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="twin-card panel locked-stage" id="twinCard" aria-disabled="true">
+          <div class="panel-label"><span class="step-number small">2</span>MISCONCEPTION TWIN</div>
+          <div class="stage-lock" id="twinLock"><b>Confirm the trace to unlock Echo</b><span>Human evidence stays in the loop.</span></div>
+          <div class="twin-header"><div class="avatar large" aria-hidden="true">E</div><div><small>MEET ECHO</small><h3 id="twinRule"></h3></div></div>
+          <blockquote id="twinSays"></blockquote>
+          <div class="counter-lab">
+            <small id="counterTitle"></small>
+            <p id="counterSetup"></p>
+            <div class="check-grid"><div><span>ORIGINAL CHECK</span><b id="originalCheck"></b></div><div class="wrong-check"><span>ECHO’S RULE</span><b id="twinCheck"></b></div></div>
+            <h4 id="counterPrompt"></h4>
+            <div class="choice-list" id="choiceList"></div>
+            <p class="feedback" id="choiceFeedback" role="status"></p>
+          </div>
+        </article>
+      </div>
+
+      <article class="teach-card panel locked" id="teachCard">
+        <div class="panel-label"><span class="step-number small">3</span>TEACH-BACK + TRANSFER</div>
+        <div class="teach-grid">
+          <div>
+            <h3>Now teach Echo the repaired rule.</h3>
+            <p id="teachPrompt">Catch the counterexample first to unlock teach-back.</p>
+            <form id="teachbackForm">
+              <label class="sr-only" for="teachbackInput">Your explanation to Echo</label>
+              <textarea id="teachbackInput" rows="3" maxlength="800" disabled placeholder="In my own words, the rule is…"></textarea>
+              <button class="button primary" id="teachbackButton" type="submit" disabled>Check my explanation</button>
+            </form>
+            <div class="feedback-card hidden" id="teachbackFeedback"></div>
+          </div>
+          <div class="transfer-block locked" id="transferBlock">
+            <span class="mini-label">FRESH TRANSFER CHECK</span>
+            <h3 id="transferQuestion">Complete the teach-back to unlock.</h3>
+            <div class="choice-list" id="transferChoices"></div>
+            <p class="feedback" id="transferFeedback" role="status"></p>
+          </div>
+        </div>
+      </article>
+
+      <div class="mastery-footer">
+        <div><span>LEARNING RECORD</span><strong id="skillName">Reasoning skill</strong></div>
+        <div class="mastery-progress" aria-hidden="true"><i id="masteryBar"></i></div>
+        <p id="masteryText">Trace → test → teach → transfer</p>
+      </div>
+    </section>
+
+    <section class="why shell" aria-labelledby="whyTitle">
+      <div class="section-heading narrow"><span class="kicker">WHY ROLE REVERSAL WORKS</span><h2 id="whyTitle">The AI becomes the novice.</h2></div>
+      <div class="why-grid">
+        <article><span>01</span><h3>Evidence, not mind-reading</h3><p>AhaWin anchors a possible misconception to the exact step that supports it and keeps uncertainty visible.</p></article>
+        <article><span>02</span><h3>A rule you can break</h3><p>A tailored counterexample turns an abstract correction into a contradiction the learner can inspect.</p></article>
+        <article><span>03</span><h3>Explanation creates effort</h3><p>Teach-back requires the learner to reconstruct the principle instead of copying a polished solution.</p></article>
+        <article><span>04</span><h3>Transfer is the finish line</h3><p>A fresh item checks whether the repaired rule survives beyond the original problem.</p></article>
+      </div>
+    </section>
+
+    <section class="evidence shell" aria-labelledby="evidenceTitle">
+      <div><span class="kicker">DESIGN EVIDENCE</span><h2 id="evidenceTitle">Built for productive struggle.</h2></div>
+      <div class="evidence-list">
+        <a href="https://www.utm.utoronto.ca/main-news/can-ai-tutor-help-students-improve-math-utm-study-investigates" target="_blank" rel="noreferrer"><b>Reasoning before answers</b><span>A 2026 math-tutor study centered support on mistakes and step-by-step reasoning.</span><em>↗</em></a>
+        <a href="https://educationendowmentfoundation.org.uk/education-evidence/teaching-learning-toolkit/metacognition-and-self-regulation" target="_blank" rel="noreferrer"><b>Metacognitive repair</b><span>Plan, monitor, and evaluate are explicit parts of effective self-regulated learning.</span><em>↗</em></a>
+        <a href="https://scale.stanford.edu/ai/repository/benchmark-math-misconceptions-bridging-gaps-middle-school-algebra-ai-supported" target="_blank" rel="noreferrer"><b>Human-confirmed diagnosis</b><span>Misconception work benefits from constrained tasks, multimodality, and educator expertise.</span><em>↗</em></a>
+      </div>
+    </section>
+  </main>
+
+  <footer><a class="brand footer-brand" href="#top"><span class="brand-mark">A</span><strong>AhaWin</strong></a><p>Teach your mistake until it disappears.</p><span>Private by design · No account · No saved work</span></footer>
+
+  <div class="loader hidden" id="loader" role="dialog" aria-modal="true" aria-labelledby="loaderTitle" aria-describedby="loaderStatus">
+    <div class="loader-card"><div class="scan-orbit"><span>A</span></div><span class="kicker">BUILDING YOUR TWIN</span><h2 id="loaderTitle">Reading the reasoning…</h2><ul id="loaderStatus"><li class="active">Transcribe the attempt</li><li>Find the earliest divergence</li><li>Design a falsifiable check</li></ul></div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

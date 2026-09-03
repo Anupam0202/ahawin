@@ -1,0 +1,26 @@
+# Education problem map
+
+The scan covered 12 required arenas. Ratings are directional research judgments, not market-size estimates.
+
+| Arena | Specific user and recurring pain | Why common tools fall short | Evidence-backed mechanism | Observable outcome | AI advantage | Main safety / feasibility issue | 75-second demo fit |
+|---|---|---|---|---|---|---|---|
+| STEM misconceptions | Learner completes several steps after an early conceptual error | Camera solvers optimize for the answer; red marks do not expose the working rule | Formative feedback, cognitive conflict, self-explanation, transfer | Catches earliest divergence and passes a fresh item | Reads handwritten steps and creates a tailored falsifying example | Vision errors and false certainty | Excellent |
+| Literacy and language | Reader retells a passage with omissions or unsupported additions | Generic summaries replace rather than test comprehension | Retrieval, retelling, feedback literacy | Accurate propositions retained in retell | Compares spoken or written retell with source meaning | Dialect and language bias | Good |
+| Accessibility | Blind, low-vision, deaf, dyslexic, or language-learning student cannot access one lesson format | Format conversion often stops at access and does not check understanding | Universal design, multimodal representation, comprehension checks | Equivalent concept check across modes | Produces synchronized text, audio, descriptions, and language supports | Quality must be co-designed with affected communities | Good |
+| Neurodiverse learning | Learner is overwhelmed by ambiguous, dense, or unpredictable tasks | One-size formatting can remove rigor or autonomy | Explicit scaffolding, learner-controlled pacing, metacognition | Task completion with fewer clarification failures | Restructures while preserving the same objective | Avoid medical claims and inferred diagnoses | Good |
+| Low-resource education | Learner shares a phone or has intermittent connectivity | Video-first products assume bandwidth and individual devices | Retrieval, local examples, printable/offline practice | Completion and recall under a data budget | Compresses one photo or text into a compact learning loop | Model calls still require connectivity | Good |
+| Teacher workload | Teacher must inspect many open responses before tomorrow's lesson | Dashboards often score rather than explain thinking | Formative assessment and small-group intervention | Time to identify actionable misconception clusters | Clusters evidence and drafts human-reviewable interventions | Consent, student privacy, batch complexity | Moderate |
+| Assessment and feedback | Learner receives a score without knowing which reasoning move failed | Generic comments are late or vague | Response-contingent feedback, fading hints | Successful revision plus transfer | Adapts feedback to the actual path taken | Hallucinated diagnosis and over-grading | Excellent |
+| Vocational learning | Novice misses one safety-critical procedural step | Manuals cannot see execution and simulations can be expensive | Deliberate practice, worked examples, immediate feedback | Correct sequence on a new attempt | Interprets video, audio, and tools in context | Domain liability and expert validation | Strong but risky |
+| Media literacy | Student accepts a plausible claim without tracing evidence | Fact-check tools give verdicts rather than teach verification | Lateral reading, source evaluation, argument mapping | Correct source-quality judgment | Retrieves and maps competing evidence | Search latency, current-event accuracy, political bias | Strong |
+| Retention and metacognition | Learner mistakes familiarity for durable knowledge | Content generators increase volume but rarely schedule effortful recall | Retrieval practice, spacing, confidence calibration | Delayed unassisted recall and calibration | Selects the next concept from history and confidence | Needs persistence and longitudinal use | Moderate |
+| Collaborative learning | Group reaches agreement without reconciling assumptions | Generic chat summaries flatten disagreement | Peer explanation, argumentation, collaborative regulation | Resolved claims and explicit evidence gaps | Maps contributions and generates productive counterpositions | Surveillance and attribution concerns | Good |
+| Adult reskilling | Worker reads a procedure but cannot apply it under variation | Courses measure completion, not decisions | Scenario practice, teach-back, transfer | Correct decisions in novel cases | Generates role-specific branching situations | Grounding and organizational approval | Strong |
+
+## Highest-leverage opening
+
+The strongest compact opportunity is **reasoning repair after handwritten STEM work**. It combines a frequent visible artifact, a consequential learning failure, strong pedagogy, a clear role for multimodal AI, and a complete demonstration arc. The crowded “scan and solve” category means differentiation must come from the learning loop, not recognition alone.
+
+## Product implication
+
+AhaWin therefore does not grade or solve the original problem. It turns the earliest evidence-bearing divergence into a testable rule, lets the learner break that rule, requires a teach-back, and checks transfer.
