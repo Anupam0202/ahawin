@@ -3,11 +3,12 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyzePayload, DEFAULT_MODEL } from './lib/core.js';
-import { analyzeRateLimit, clientKeyFromRequest } from './lib/rate-limit.js';
+import { analyzePayload, DEFAULT_MODEL } from '../lib/core.js';
+import { analyzeRateLimit, clientKeyFromRequest } from '../lib/rate-limit.js';
 
-const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const envPath = path.join(ROOT, '.env');
+const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const PUBLIC_ROOT = path.join(APP_ROOT, 'public');
+const envPath = path.join(APP_ROOT, '.env');
 if (fs.existsSync(envPath)) {
   for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
     const row = line.trim();
@@ -20,7 +21,7 @@ if (fs.existsSync(envPath)) {
 }
 
 const PORT = Number(process.env.PORT || 4173);
-const publicFiles = new Set(['/index.html', '/styles.css', '/app.js', '/favicon.svg', '/sample-work.svg']);
+const publicFiles = new Set(['/index.html', '/styles.css', '/ui.js', '/favicon.svg', '/sample-work.svg']);
 const mime = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml'
@@ -67,7 +68,7 @@ function readBody(req, limit = 6_000_000) {
 async function serve(pathname, res) {
   const wanted = pathname === '/' ? '/index.html' : pathname;
   if (!publicFiles.has(wanted)) return json(res, 404, { error: 'Not found.' });
-  const file = path.join(ROOT, wanted.slice(1));
+  const file = path.join(PUBLIC_ROOT, wanted.slice(1));
   const data = await fsp.readFile(file);
   res.writeHead(200, { ...securityHeaders(mime[path.extname(file)]), 'Cache-Control': wanted === '/index.html' ? 'no-cache' : 'public, max-age=300' });
   res.end(data);

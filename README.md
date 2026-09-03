@@ -89,11 +89,12 @@ bounded server endpoint ──► Gemini multimodal structured output
 confirmed trace → Echo check → teach-back → transfer
 ```
 
-- `index.html`, `styles.css`, `app.js` — accessible, responsive browser experience
+- `public/index.html`, `public/styles.css`, `public/ui.js` — static browser experience isolated from the server runtime
 - `lib/core.js` — prompts, schemas, normalization, Gemini adapter, fixture, rubric checks
 - `lib/rate-limit.js` — ephemeral hashed client limit
-- `api/` — Vercel serverless endpoints
-- `server.js` — local parity server
+- `api/` — the only Vercel serverless endpoints
+- `scripts/local-server.mjs` — local parity server
+- `scripts/verify-deployment-layout.mjs` — prevents browser files from becoming Vercel functions
 - `tests/` and `scripts/` — automated checks and safety evaluation
 
 Full detail: [`docs/architecture.md`](docs/architecture.md).
@@ -144,6 +145,7 @@ Current measured local result:
 - syntax checks: pass,
 - unit tests: **18/18 pass**,
 - deterministic evaluation: **17/17 pass**,
+- deployment-layout regression: **pass** (`public/` output and Node-safe browser import),
 - secret-pattern scan: pass,
 - desktop critical flow: pass,
 - mobile critical flow: pass,

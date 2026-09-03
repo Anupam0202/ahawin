@@ -79,9 +79,9 @@ In GitHub:
 1. Sign in to Vercel using the GitHub account that owns the repository.
 2. Open `https://vercel.com/new`.
 3. Select **Import Git Repository** and choose `ahawin`.
-4. Set the framework preset to **Other** if Vercel does not detect it automatically.
+4. Set the framework preset to **Other**.
 5. Leave **Build Command** empty.
-6. Leave **Output Directory** empty.
+6. Set **Output Directory** to `public` (the committed `vercel.json` also enforces this).
 7. Keep the project root as `.`.
 8. Add `GEMINI_API_KEY` through Vercel's encrypted environment-variable UI for **Production** and **Preview** as needed.
 9. Add `GEMINI_MODEL=gemini-3.8-flash` only if an explicit model setting is desired.
@@ -116,9 +116,11 @@ curl -fsS https://YOUR-PROJECT.vercel.app/api/health
 curl -fsSI https://YOUR-PROJECT.vercel.app/
 ```
 
+Before redeploying an existing project that previously detected root `app.js` as a function, confirm **Settings → Build and Deployment** shows Framework **Other**, an empty Build Command, Output Directory `public`, and Root Directory `.`. Redeploy the newest commit without reusing an old failed deployment.
+
 Then verify in a browser:
 
-1. Hero and workbench load with no console error.
+1. Hero and workbench return HTTP 200 and load with no console error.
 2. Guided demo completes through trace confirmation, contradiction, teach-back, and transfer.
 3. A real image/typed request shows **LIVE GEMINI** and returns a relevant trace.
 4. Custom analysis failure never displays unrelated sample work.

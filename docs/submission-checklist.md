@@ -8,7 +8,7 @@ Status date: **3 September 2026**.
 |---|---|---|
 | Functional project | Done locally | Guided desktop/mobile/keyboard flows pass |
 | Source code | Done locally | Clean delivery ZIP |
-| GitHub repository | Blocked | Authenticate and select owner/visibility; use `release-guide.md` |
+| GitHub repository | Connected to Vercel | Push the version 1.1.1 fix to the existing `main` branch |
 | Vercel production app | Blocked | Import GitHub repo, configure key, smoke-test |
 | Two-minute script | Done | `demo-script.md` |
 | Recorded/uploaded video | Blocked | Record after deployment; `AhaWin-2min-demo.mp4` |
@@ -75,4 +75,4 @@ Status date: **3 September 2026**.
 3. Open video signed out and scrub start/middle/end.
 4. Paste the three real links into the form, proofread, submit, and save the receipt.
 
-Remaining blockers are account- or credential-bound: Gemini configuration/live evaluation, GitHub owner/auth/visibility, Vercel import/deployment, video recording/upload, and final team credits.
+Remaining blockers are account- or credential-bound: pushing the fix, corrected Vercel redeployment, Gemini configuration/live evaluation, video recording/upload, and final team credits.

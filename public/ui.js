@@ -471,11 +471,11 @@ function bind() {
 function init() {
   let stored = '';
   try { stored = localStorage.getItem('ahawin-theme') || ''; } catch {}
-  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches;
   setTheme(stored || (dark ? 'dark' : 'light'));
   bind();
   checkHealth();
   if (new URLSearchParams(location.search).get('demo') === '1') setTimeout(runDemo, 350);
 }
 
-init();
+if (typeof window !== 'undefined' && typeof document !== 'undefined') init();

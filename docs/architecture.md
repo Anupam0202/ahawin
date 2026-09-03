@@ -33,12 +33,12 @@ No database, authentication system, analytics service, or persistent learner pro
 
 | Surface | Files | Responsibility |
 |---|---|---|
-| Static interface | `index.html`, `styles.css`, `app.js` | Input, local image resizing, guided flow, keyboard behavior, safe text rendering |
+| Static interface | `public/index.html`, `public/styles.css`, `public/ui.js` | Vercel static output, local image resizing, guided flow, keyboard behavior, safe text rendering |
 | Shared core | `lib/core.js` | Input normalization, prompt, schemas, Gemini calls, semantic validation, fixture, teach-back evaluation |
 | Rate limit | `lib/rate-limit.js` | Hashed ephemeral client key and per-instance request window |
 | Vercel endpoints | `api/analyze.js`, `api/health.js` | Serverless analysis and configuration health |
-| Local parity server | `server.js` | Static hosting and matching API behavior for local development |
-| Validation | `tests/`, `scripts/evaluate.mjs`, `scripts/secret-scan.sh` | Unit, safety-contract, and secret checks |
+| Local parity server | `scripts/local-server.mjs` | Serves `public/` and matching API behavior for local development; its non-root name avoids platform server auto-detection |
+| Validation | `tests/`, `scripts/evaluate.mjs`, `scripts/verify-deployment-layout.mjs`, `scripts/secret-scan.sh` | Unit, safety-contract, deployment-layout, and secret checks |
 | Deployment | `vercel.json`, `.github/workflows/ci.yml` | Headers, route behavior, and CI verification |
 
 ## Why a dependency-free web stack
@@ -121,7 +121,7 @@ Local server and Vercel configuration include:
 
 ## Deployment
 
-Vercel serves root static files and automatically treats files under `api/` as Node serverless functions. There is no build output directory and no build command. Required production secret: `GEMINI_API_KEY`. Optional configuration: `GEMINI_MODEL` and `ALLOW_DEMO_FALLBACK` (recommended `false`).
+Vercel serves only `public/` as static output through `outputDirectory: "public"`; files under `api/` are the only Node serverless functions. The browser entrypoint is deliberately named `ui.js`, and its initialization is guarded against non-browser imports. This prevents Vercel from auto-detecting the former root `app.js` as a Node entrypoint. There is no build command. Required production secret: `GEMINI_API_KEY`. Optional configuration: `GEMINI_MODEL` and `ALLOW_DEMO_FALLBACK` (recommended `false`).
 
 ## Reliability limitations
 

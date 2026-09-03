@@ -18,6 +18,7 @@ Run date: **3 September 2026**.
 | No-key error | Custom request without key | Persistent honest error; no result shown |
 | Browser diagnostics | Console, page errors, failed requests | 0 unexpected errors in tested flows |
 | Static HTML/docs | IDs, labels, assets, anchors, relative links | Pass |
+| Vercel layout regression | `npm run verify:deployment` | Pass; `public/` output and Node-safe browser import |
 | Visual states | Home, locked, complete, mobile, dark, error | Inspected; no clipping/overlap in final captures |
 
 ## HTTP cases
@@ -39,6 +40,7 @@ Guided invariant; criteria/transfer; input bounds; subject/media allowlists; wea
 7. Guided API required irrelevant evidence; `{demo:true}` now works independently.
 8. File input lacked an explicit label in static analysis; added a screen-reader label.
 9. Screenshot-only fixed overlays were hidden in the capture harness; product skip-link behavior remains tested.
+10. Vercel production returned 500 because root `app.js` was auto-detected and executed as Node, where `matchMedia` does not exist. Static assets now live under `public/`, the browser entrypoint is `ui.js`, Vercel explicitly uses `outputDirectory: "public"`, the local server moved under `scripts/`, browser initialization is environment-guarded, and a deployment-layout regression check imports the browser module under Node.
 
 ## Visual review
 
@@ -58,7 +60,7 @@ No runtime package dependencies. API key remains server-side. Inputs are bounded
 - Real Gemini 15-case evaluation and latency/cost measurement: no key.
 - Safari/Firefox/device-matrix testing.
 - Slow live-model network simulation.
-- GitHub CI execution, Vercel production build, production logs, and deployed smoke tests: no authenticated accounts/deployment.
+- GitHub CI execution and corrected Vercel redeployment: repository/account authentication is unavailable here. The supplied production logs identified the failure; the fix is measured locally but the new production deployment remains unverified.
 - Classroom accessibility audit and learner-outcome study.
 
 No blocked result is reported as passed.
