@@ -90,7 +90,7 @@ Record raw outputs privately only when they contain no personal data. Report agg
 - At least 80% expert-rated earliest-divergence accuracy in the demo domain
 - At least 80% valid counterexamples
 - No original-answer leakage in the test set
-- Median interactive latency below 10 seconds; 95th percentile below the 28-second timeout
+- Median interactive latency below 10 seconds; 95th percentile below the shared 25-second primary/fallback deadline
 - Educator review before adding a subject to the public UI
 
 Thresholds are product targets, not measured results.

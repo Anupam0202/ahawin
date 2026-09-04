@@ -33,6 +33,7 @@ export default async function handler(req, res) {
         code,
         status,
         upstreamStatus: error?.upstreamStatus || null,
+        attempts: error?.attempts || null,
         diagnostic: error?.diagnostic || error?.name || 'Error'
       }));
       return res.status(status).json({ error: message, code, reference });

@@ -101,16 +101,18 @@ Full detail: [`docs/architecture.md`](docs/architecture.md).
 
 ## Model strategy
 
-- Default model: `gemini-3.8-flash`, configurable in one server-side variable
+- Primary model: `gemini-3.8-flash`; stable fallback: `gemini-3.5-flash-lite`
 - Image and text are analyzed together
 - JSON schema constrains the output
 - Semantic invariants reject contradictory or incomplete results
-- Analysis timeout: 24 seconds, leaving headroom inside Vercel's 30-second function limit
+- Gemini 3 uses low thinking and its recommended default temperature to reduce latency
+- A retryable failure or four-second slow primary starts the fallback; the first semantically valid result wins
+- Both attempts share a 25-second deadline, leaving headroom inside Vercel's 30-second function limit
 - Provider failures are classified and logged with redacted diagnostics, a safe error code, and a random reference
 - Custom analysis fails honestly by default; it does not silently become the sample
 - The Gemini key is server-only and must never use a browser-visible prefix
 
-Live model quality remains unevaluated in this repository until a key is configured and the credentialed cases in [`docs/ai-evaluation.md`](docs/ai-evaluation.md) run.
+Production connectivity is measured, but live quality remains unevaluated: one typed call returned provider HTTP 503 and two timed out before version 1.1.4 failover was added. The credentialed cases in [`docs/ai-evaluation.md`](docs/ai-evaluation.md) still need to run successfully.
 
 ## Local setup
 
@@ -131,7 +133,10 @@ Never commit `.env`, paste a key into a command, or expose the key through brows
 | Variable | Required | Default | Purpose |
 |---|---:|---|---|
 | `GEMINI_API_KEY` | Live analysis only | unset | Server-side Gemini credential |
-| `GEMINI_MODEL` | No | `gemini-3.8-flash` | Central model selection |
+| `GEMINI_MODEL` | No | `gemini-3.8-flash` | Primary model selection |
+| `GEMINI_FALLBACK_MODEL` | No | `gemini-3.5-flash-lite` | Stable failover model; use `none` to disable |
+| `GEMINI_DEADLINE_MS` | No | `25000` | Shared primary/fallback deadline, clamped below Vercel's limit |
+| `GEMINI_HEDGE_DELAY_MS` | No | `4000` | Starts fallback when the primary remains pending |
 | `ALLOW_DEMO_FALLBACK` | No | `false` | Allows a clearly labeled sample only after live failure; leave false for honest fail-closed behavior |
 | `PORT` | No | `4173` | Local server port |
 
@@ -144,7 +149,7 @@ npm run verify
 Current measured local result:
 
 - syntax checks: pass,
-- unit tests: **22/22 pass**,
+- unit tests: **25/25 pass**,
 - deterministic evaluation: **17/17 pass**,
 - deployment-layout regression: **pass** (`framework: null`, no production `start` script, `public/` output, and Node-safe browser import),
 - secret-pattern scan: pass,
@@ -152,7 +157,7 @@ Current measured local result:
 - mobile critical flow: pass,
 - no-key failure path: pass,
 - horizontal overflow in tested viewports: none,
-- live Gemini cases: **not run** because the key was unavailable.
+- successful live Gemini cases: **0**; production exposed one high-demand 503 and two timeouts before the version 1.1.4 resilience change.
 
 ## Privacy and safety
 

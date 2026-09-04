@@ -1,35 +1,42 @@
 # Live-analysis incident runbook — 4 September 2026
 
-## What the production evidence proves
+## Measured production evidence
 
-Deployment `dpl_EiHhiiYfLvCbvrhP8J6XKUStbJ2g` serves the static application and returns HTTP 200 from `/api/health`. The earlier `matchMedia is not defined` deployment-classification incident is fixed.
+The deployment at `https://ahawin.vercel.app` now serves the static application and returns HTTP 200 from `/api/health`. The deterministic guided request also returns HTTP 200, proving that Vercel routing, the serverless handler, JSON parsing, and the application core are operational.
 
-The remaining failure is isolated to `POST /api/analyze`, which returns HTTP 502. The production health response reports `geminiConfigured: true` and `model: gemini-3.7-flash`. In version 1.1.2, that flag checks only whether a non-empty environment variable exists. It does not prove that the key is valid, authorized, within quota, or able to access the selected model.
+Three typed live requests against `gemini-3.8-flash` failed as follows:
 
-Version 1.1.2 discarded the upstream exception and wrote no diagnostic event, so the two copied Vercel rows cannot distinguish among credentials, model access, quota, timeout, request rejection, or invalid structured output. A precise root cause must not be claimed from those rows alone.
+- one upstream HTTP 503: `This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.`
+- two request timeouts after the version 1.1.3 24-second limit.
 
-## Version 1.1.3 remediation
+This is no longer an authentication, deployment-classification, browser-runtime, or malformed-client-request incident. The measured failure is provider capacity and latency on the selected model. Google documents 503 `UNAVAILABLE` and timeouts as transient failures for which backoff/retry is appropriate.
 
-- Normalize surrounding whitespace and accidental matching quotes in `GEMINI_API_KEY` and `GEMINI_MODEL`.
-- Keep `gemini-3.8-flash` as the stable default.
-- Reduce the model timeout from 28 to 24 seconds, leaving headroom inside the 30-second Vercel function limit.
-- Classify upstream failures as authentication, model, quota, timeout, request, safety, invalid-output, or provider failures.
-- Return only a safe code and random reference to the browser.
-- Emit one structured `analysis_failed` server event with the same reference, upstream HTTP status, and a redacted diagnostic.
-- Never log the request body, image, prompt, or API key.
-- Label health as `live-configured` with `credentialCheck: presence-only` instead of claiming the provider is ready.
+## Version 1.1.4 remediation
 
-## Required Vercel environment values
+Version 1.1.4 applies three bounded reliability controls:
 
-Open **Vercel → ahawin → Settings → Environment Variables** and set these for **Production**:
+1. **Lower reasoning latency.** Gemini 3 requests use `thinkingConfig.thinkingLevel: low`. The earlier explicit `temperature: 0.2` is removed because Gemini 3 guidance recommends its default temperature and warns that low values can contribute to looping or degraded performance.
+2. **Staggered model failover.** The primary remains `gemini-3.8-flash`. If it returns a retryable error immediately, or is still pending after four seconds, `gemini-3.5-flash-lite` starts as a stable multimodal structured-output fallback. The first response that passes all semantic invariants wins; the other request is cancelled.
+3. **One shared deadline.** Both attempts share a 25-second wall-clock deadline, leaving five seconds of headroom inside the 30-second Vercel function limit. There is no chain of full-length retries that can overrun the function.
 
-| Name | Value |
+The successful response reports the model actually used and `fallbackUsed`. If the fallback wins, the UI receives an explicit warning. A custom submission never silently becomes the unrelated guided sample.
+
+## Reliability and cost tradeoff
+
+A normal fast primary response makes one Gemini call. When the primary is slow or returns a retryable failure, failover can make a second call to the same Gemini API using the same bounded learner evidence. This can increase provider usage for affected requests, but it materially improves demo reliability. The losing in-flight request is cancelled. Set `GEMINI_FALLBACK_MODEL=none` to disable this behavior.
+
+## Required production variables
+
+| Name | Recommended value |
 |---|---|
-| `GEMINI_API_KEY` | A current Google AI Studio key, pasted as the raw value with no surrounding quotes |
+| `GEMINI_API_KEY` | Current server-side Google AI Studio key, without quotes |
 | `GEMINI_MODEL` | `gemini-3.8-flash` |
+| `GEMINI_FALLBACK_MODEL` | `gemini-3.5-flash-lite` |
+| `GEMINI_DEADLINE_MS` | `25000` |
+| `GEMINI_HEDGE_DELAY_MS` | `4000` |
 | `ALLOW_DEMO_FALLBACK` | `false` |
 
-After every environment change, redeploy the newest Git commit. Do not expose the key in chat, shell history, screenshots, source, or logs.
+The code supplies all non-secret defaults, so only `GEMINI_API_KEY` is strictly required. Environment changes require a new deployment.
 
 ## Acceptance sequence
 
@@ -47,25 +54,31 @@ curl -sS -H 'content-type: application/json' \
   "$BASE/api/analyze"
 ```
 
-Expected:
+Expected health fields include:
 
-1. Health returns `ok: true`, `geminiConfigured: true`, `model: gemini-3.8-flash`, and `credentialCheck: presence-only`.
-2. The deterministic demo returns HTTP 200 independently of Gemini.
-3. The typed live request returns HTTP 200 with `meta.mode: gemini-live`.
-4. A real image request then returns a relevant trace and does not expose a key in browser assets or responses.
+```json
+{
+  "ok": true,
+  "geminiConfigured": true,
+  "model": "gemini-3.8-flash",
+  "fallbackModel": "gemini-3.5-flash-lite",
+  "thinkingLevel": "low",
+  "failover": "staggered",
+  "credentialCheck": "presence-only"
+}
+```
 
-## If the live request still fails
+A successful live response has HTTP 200, `meta.mode: gemini-live`, the actual `meta.model`, and a boolean `meta.fallbackUsed`. After the typed request passes, test one resized handwritten image.
 
-Copy the single Vercel log event whose `event` is `analysis_failed`. It will contain no submitted work or key.
+## If both models fail
 
-| Code | Meaning | Primary action |
-|---|---|---|
-| `GEMINI_AUTH` | Key rejected or not authorized | Replace the server-side key; verify API restrictions and project access |
-| `GEMINI_MODEL` | Model unavailable to the key | Set `GEMINI_MODEL=gemini-3.8-flash`, save, and redeploy |
-| `GEMINI_QUOTA` | Rate or project quota exhausted | Check Google AI Studio quota/billing and retry later |
-| `GEMINI_TIMEOUT` | Provider did not finish within 24 seconds | Retry typed input or a smaller image; inspect provider status |
-| `GEMINI_REQUEST_REJECTED` | Gemini returned HTTP 400 | Use the redacted diagnostic to identify the rejected field |
-| `GEMINI_INVALID_OUTPUT` | Response was empty, truncated, malformed, or failed semantic invariants | Retry once; retain the diagnostic for prompt/schema tuning |
-| `GEMINI_UPSTREAM` / `GEMINI_UNAVAILABLE` | Provider or network failure | Check provider status and retry later |
+Copy only the matching Vercel `analysis_failed` event. Version 1.1.4 records a redacted `attempts` array showing each model, safe error code, and upstream status. It never logs the request body, image, prompt, or API key.
 
-Do not turn on `ALLOW_DEMO_FALLBACK` to hide a broken live path. The guided demo already remains available and is labeled honestly.
+Provider capacity cannot be guaranteed in application code. For a time-critical public demo, Google AI Studio's billed traffic tier can reduce exposure to sheddable free-tier capacity; the guided demo remains the honest offline backup.
+
+## Official references
+
+- https://ai.google.dev/gemini-api/docs/troubleshooting
+- https://ai.google.dev/gemini-api/docs/generate-content/thinking
+- https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite
+- https://aistudio.google.com/status

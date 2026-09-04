@@ -83,6 +83,9 @@ const server = http.createServer(async (req, res) => {
         ok: true,
         geminiConfigured: config.geminiConfigured,
         model: config.model,
+        fallbackModel: config.fallbackModel || null,
+        thinkingLevel: 'low',
+        failover: config.fallbackModel ? 'staggered' : 'disabled',
         mode: config.geminiConfigured ? 'live-configured' : 'transparent-demo',
         credentialCheck: 'presence-only',
         timestamp: new Date().toISOString()
@@ -108,6 +111,7 @@ const server = http.createServer(async (req, res) => {
         code: error?.code || 'ANALYSIS_FAILED',
         status,
         upstreamStatus: error?.upstreamStatus || null,
+        attempts: error?.attempts || null,
         diagnostic: error?.diagnostic || error?.name || 'Error'
       }));
     }
@@ -120,5 +124,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '127.0.0.1', () => {
   const config = resolveGeminiConfig(process.env);
   console.log(`AhaWin: http://127.0.0.1:${PORT}`);
-  console.log(config.geminiConfigured ? `Gemini ${config.model} configured (presence only)` : 'Guided demo mode; add GEMINI_API_KEY for live analysis');
+  console.log(config.geminiConfigured
+    ? `Gemini ${config.model} configured with ${config.fallbackModel || 'no'} fallback (presence only)`
+    : 'Guided demo mode; add GEMINI_API_KEY for live analysis');
 });

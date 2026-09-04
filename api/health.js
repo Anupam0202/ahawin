@@ -8,6 +8,9 @@ export default function handler(req, res) {
     ok: true,
     geminiConfigured: config.geminiConfigured,
     model: config.model,
+    fallbackModel: config.fallbackModel || null,
+    thinkingLevel: 'low',
+    failover: config.fallbackModel ? 'staggered' : 'disabled',
     mode: config.geminiConfigured ? 'live-configured' : 'transparent-demo',
     credentialCheck: 'presence-only',
     timestamp: new Date().toISOString()

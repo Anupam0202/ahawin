@@ -85,8 +85,9 @@ In GitHub:
 7. Keep the project root as `.`.
 8. Add `GEMINI_API_KEY` through Vercel's encrypted environment-variable UI for **Production** and **Preview** as needed. Paste the raw key with no surrounding quotes or Markdown formatting.
 9. Add `GEMINI_MODEL=gemini-3.8-flash` as the exact production model value.
-10. Add `ALLOW_DEMO_FALLBACK=false`.
-11. Deploy.
+10. Add `GEMINI_FALLBACK_MODEL=gemini-3.5-flash-lite` for bounded failover.
+11. Add `ALLOW_DEMO_FALLBACK=false`.
+12. Deploy.
 
 Once imported from GitHub, every push to `main` creates a new production deployment under the project's configured Git settings; pull requests create previews when enabled.
 
@@ -101,6 +102,7 @@ vercel link
 vercel env add GEMINI_API_KEY production
 vercel env add GEMINI_API_KEY preview
 vercel env add GEMINI_MODEL production
+vercel env add GEMINI_FALLBACK_MODEL production
 vercel env add ALLOW_DEMO_FALLBACK production
 vercel --prod
 ```
@@ -127,7 +129,7 @@ Then verify in a browser:
 5. Mobile layout has no horizontal scroll.
 6. Keyboard focus remains visible.
 7. Network responses and downloaded browser assets contain no key.
-8. `/api/health` says `geminiConfigured: true` and `credentialCheck: presence-only` but never returns the key. This proves presence, not validity.
+8. `/api/health` says `geminiConfigured: true`, names the primary and fallback, and reports `credentialCheck: presence-only` without returning the key.
 9. Vercel logs contain no image body or secret. On live failure, use only the redacted `analysis_failed` event and its reference; see `docs/live-analysis-runbook.md`.
 
 Environment-variable changes require a new deployment.

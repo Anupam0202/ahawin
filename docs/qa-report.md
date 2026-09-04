@@ -7,7 +7,7 @@ Run date: **4 September 2026**.
 | Gate | Command / method | Result |
 |---|---|---|
 | JavaScript syntax | `npm run check` | Pass |
-| Unit tests | `npm test` | **22/22 pass** |
+| Unit tests | `npm test` | **25/25 pass** |
 | Deterministic evaluation | `npm run eval` | **17/17 pass; 0 live calls** |
 | Secret patterns | `scripts/secret-scan.sh` | `SECRET-SCAN-PASS` |
 | HTTP/security | local Node server + scripted requests | **11/11 pass** |
@@ -27,7 +27,7 @@ Health/no-store; static page and security headers; bodyless HEAD; CSS MIME; API 
 
 ## Semantic unit coverage
 
-Guided invariant; criteria/transfer; input bounds; subject/media allowlists; weak/strong/domain-neutral teach-back; honest no-key; no-divergence and needs-evidence states; contradictory state; duplicate choices; invalid index; injection/data-channel separation; explicit fallback; teach-back no-key; limiter reset.
+Guided invariant; criteria/transfer; input bounds; subject/media allowlists; weak/strong/domain-neutral teach-back; honest no-key; no-divergence and needs-evidence states; contradictory state; duplicate choices; invalid index; injection/data-channel separation; low-thinking request configuration; immediate 503 failover; slow-primary hedging and cancellation; explicit guided fallback; teach-back no-key; limiter reset.
 
 ## Failures found and fixed
 
@@ -42,6 +42,7 @@ Guided invariant; criteria/transfer; input bounds; subject/media allowlists; wea
 9. Screenshot-only fixed overlays were hidden in the capture harness; product skip-link behavior remains tested.
 10. Vercel production returned 500 because root `app.js` was auto-detected and executed as Node, where `matchMedia` does not exist. Static assets now live under `public/`, the browser entrypoint is `ui.js`, Vercel explicitly uses `outputDirectory: "public"`, the local server moved under `scripts/`, browser initialization is environment-guarded, and a deployment-layout regression check imports the browser module under Node.
 11. The corrected deployment served the app and health endpoint but live analysis returned 502 with empty Vercel messages. Provider exceptions were being discarded. Version 1.1.3 adds environment-value normalization, safe provider error classification, redacted structured logging, response references, and four regression tests.
+12. Version 1.1.3 diagnostics then measured one Gemini HTTP 503 high-demand rejection and two 24-second timeouts. Version 1.1.4 switches Gemini 3 to low thinking, removes the low-temperature override, and adds a stable staggered fallback under one 25-second deadline.
 
 ## Visual review
 
@@ -61,7 +62,7 @@ No runtime package dependencies. API key remains server-side. Inputs are bounded
 - Real Gemini 15-case evaluation and latency/cost measurement: no key.
 - Safari/Firefox/device-matrix testing.
 - Slow live-model network simulation.
-- Credentialed live Gemini request: production now serves the static app and health endpoint, but the current key/model path returned 502. Version 1.1.3 must be deployed and the resulting safe diagnostic or successful response verified.
+- Successful credentialed live Gemini request: the key reached Gemini, but measured calls returned one provider 503 and two timeouts. Version 1.1.4 failover still needs production verification.
 - Classroom accessibility audit and learner-outcome study.
 
 No blocked result is reported as passed.

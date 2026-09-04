@@ -22,7 +22,11 @@ async function withModelResponse(raw, input = { subject: 'Algebra', problem: 'So
     });
   };
   try {
-    const result = await analyzePayload(input, { GEMINI_API_KEY: 'unit-test-credential', GEMINI_MODEL: 'test-model' });
+    const result = await analyzePayload(input, {
+      GEMINI_API_KEY: 'unit-test-credential',
+      GEMINI_MODEL: 'gemini-3.8-flash',
+      GEMINI_FALLBACK_MODEL: 'none'
+    });
     return { result, capturedRequest };
   } finally {
     global.fetch = originalFetch;
@@ -65,11 +69,21 @@ test('unknown subjects fail into a safe general category', () => {
 test('copied environment values are trimmed and unquoted', () => {
   const config = resolveGeminiConfig({
     GEMINI_API_KEY: '  "unit-test-credential"  ',
-    GEMINI_MODEL: " 'gemini-3.8-flash' "
+    GEMINI_MODEL: " 'gemini-3.8-flash' ",
+    GEMINI_FALLBACK_MODEL: '  "gemini-3.5-flash-lite"  '
   });
   assert.equal(config.apiKey, 'unit-test-credential');
   assert.equal(config.model, 'gemini-3.8-flash');
+  assert.equal(config.fallbackModel, 'gemini-3.5-flash-lite');
+  assert.equal(config.deadlineMs, 25000);
+  assert.equal(config.hedgeDelayMs, 4000);
   assert.equal(config.geminiConfigured, true);
+});
+
+test('Gemini 3 requests use low thinking and avoid low-temperature loops', { concurrency: false }, async () => {
+  const { capturedRequest } = await withModelResponse(modelFixture());
+  assert.deepEqual(capturedRequest.generationConfig.thinkingConfig, { thinkingLevel: 'low' });
+  assert.equal(Object.hasOwn(capturedRequest.generationConfig, 'temperature'), false);
 });
 
 test('unsupported image formats fail closed', () => {
@@ -164,6 +178,83 @@ test('analysis fallback is explicit and opt-in only', { concurrency: false }, as
     assert.equal(fallback.meta.mode, 'demo-fallback');
     assert.equal(fallback.meta.poweredByGemini, false);
     assert.match(fallback.meta.warning, /not an analysis of the submitted work/i);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('an immediate primary 503 fails over to the stable Flash-Lite model', { concurrency: false }, async () => {
+  const originalFetch = global.fetch;
+  const calls = [];
+  global.fetch = async (url, options) => {
+    calls.push(String(url));
+    if (String(url).includes('gemini-3.8-flash')) {
+      return new Response(JSON.stringify({
+        error: { message: 'This model is currently experiencing high demand.' }
+      }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    assert.deepEqual(JSON.parse(options.body).generationConfig.thinkingConfig, { thinkingLevel: 'low' });
+    return new Response(JSON.stringify({
+      candidates: [{ content: { parts: [{ text: JSON.stringify(modelFixture()) }] } }]
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  };
+  try {
+    const result = await analyzePayload(
+      { subject: 'Algebra', problem: 'x+1=2', work: 'x=1' },
+      {
+        GEMINI_API_KEY: 'unit-test-credential',
+        GEMINI_MODEL: 'gemini-3.8-flash',
+        GEMINI_FALLBACK_MODEL: 'gemini-3.5-flash-lite'
+      }
+    );
+    assert.equal(result.meta.model, 'gemini-3.5-flash-lite');
+    assert.equal(result.meta.fallbackUsed, true);
+    assert.match(result.meta.warning, /primary model was unavailable or slow/i);
+    assert.equal(calls.length, 2);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('a slow primary is hedged and cancelled after the fallback succeeds', { concurrency: false }, async () => {
+  const originalFetch = global.fetch;
+  const calls = [];
+  global.fetch = (url, options) => {
+    calls.push(String(url));
+    if (String(url).includes('gemini-3.8-flash')) {
+      return new Promise((resolve, reject) => {
+        const cancel = () => reject(options.signal.reason || new Error('cancelled'));
+        if (options.signal.aborted) cancel();
+        else options.signal.addEventListener('abort', cancel, { once: true });
+      });
+    }
+    return Promise.resolve(new Response(JSON.stringify({
+      candidates: [{ content: { parts: [{ text: JSON.stringify(modelFixture()) }] } }]
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    }));
+  };
+  try {
+    const result = await analyzePayload(
+      { subject: 'Algebra', problem: 'x+1=2', work: 'x=1' },
+      {
+        GEMINI_API_KEY: 'unit-test-credential',
+        GEMINI_MODEL: 'gemini-3.8-flash',
+        GEMINI_FALLBACK_MODEL: 'gemini-3.5-flash-lite',
+        GEMINI_HEDGE_DELAY_MS: '5',
+        GEMINI_DEADLINE_MS: '8000'
+      }
+    );
+    assert.equal(result.meta.model, 'gemini-3.5-flash-lite');
+    assert.equal(result.meta.fallbackUsed, true);
+    assert.equal(calls.length, 2);
   } finally {
     global.fetch = originalFetch;
   }

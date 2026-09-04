@@ -38,7 +38,7 @@ The browser-only root file `app.js` used a conventional server entrypoint name. 
 
 Production deployment `dpl_EiHhiiYfLvCbvrhP8J6XKUStbJ2g` subsequently served the static application and returned HTTP 200 from `/api/health`, confirming that the deployment-classification failure is fixed.
 
-The same deployment returned HTTP 502 from `POST /api/analyze`. That is a separate Gemini integration incident, not a recurrence of `matchMedia`. Version 1.1.2 suppressed the upstream exception, so its empty runtime-log message cannot identify the exact provider cause. Version 1.1.3 adds safe diagnostics, environment normalization, and a 24-second timeout. See `live-analysis-runbook.md`.
+The same deployment returned HTTP 502 from `POST /api/analyze`. That is a separate Gemini integration incident, not a recurrence of `matchMedia`. Version 1.1.2 suppressed the upstream exception; version 1.1.3 diagnostics then measured one Gemini HTTP 503 high-demand response and two timeouts. Version 1.1.4 adds low thinking, removes the low-temperature override, and races a stable fallback under one 25-second deadline. See `live-analysis-runbook.md`.
 
 ## Redeploy
 
