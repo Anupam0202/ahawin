@@ -206,10 +206,6 @@ See [`SECURITY.md`](SECURITY.md).
 - [`docs/release-guide.md`](docs/release-guide.md)
 - [`docs/live-analysis-runbook.md`](docs/live-analysis-runbook.md)
 
-## Credits
-
-Built for the AI education hackathon. Add final team member names and roles before submission.
-
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
