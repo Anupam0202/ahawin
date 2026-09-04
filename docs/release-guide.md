@@ -83,8 +83,8 @@ In GitHub:
 5. Leave **Build Command** empty.
 6. Set **Output Directory** to `public` (the committed `vercel.json` also enforces this).
 7. Keep the project root as `.`.
-8. Add `GEMINI_API_KEY` through Vercel's encrypted environment-variable UI for **Production** and **Preview** as needed.
-9. Add `GEMINI_MODEL=gemini-3.8-flash` only if an explicit model setting is desired.
+8. Add `GEMINI_API_KEY` through Vercel's encrypted environment-variable UI for **Production** and **Preview** as needed. Paste the raw key with no surrounding quotes or Markdown formatting.
+9. Add `GEMINI_MODEL=gemini-3.8-flash` as the exact production model value.
 10. Add `ALLOW_DEMO_FALLBACK=false`.
 11. Deploy.
 
@@ -127,8 +127,8 @@ Then verify in a browser:
 5. Mobile layout has no horizontal scroll.
 6. Keyboard focus remains visible.
 7. Network responses and downloaded browser assets contain no key.
-8. `/api/health` says `geminiConfigured: true` but never returns the key.
-9. Vercel logs contain no image body or secret.
+8. `/api/health` says `geminiConfigured: true` and `credentialCheck: presence-only` but never returns the key. This proves presence, not validity.
+9. Vercel logs contain no image body or secret. On live failure, use only the redacted `analysis_failed` event and its reference; see `docs/live-analysis-runbook.md`.
 
 Environment-variable changes require a new deployment.
 

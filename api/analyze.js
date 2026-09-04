@@ -1,5 +1,10 @@
+import crypto from 'node:crypto';
 import { analyzePayload } from '../lib/core.js';
 import { analyzeRateLimit, clientKeyFromRequest } from '../lib/rate-limit.js';
+
+function errorReference() {
+  return `AHA-ERR-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+}
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -19,6 +24,19 @@ export default async function handler(req, res) {
   } catch (error) {
     const status = Number(error?.status) || 500;
     const message = error?.expose || status < 500 ? error.message : 'Analysis failed safely. Please try again.';
+    if (status >= 500) {
+      const reference = errorReference();
+      const code = error?.code || 'ANALYSIS_FAILED';
+      console.error(JSON.stringify({
+        event: 'analysis_failed',
+        reference,
+        code,
+        status,
+        upstreamStatus: error?.upstreamStatus || null,
+        diagnostic: error?.diagnostic || error?.name || 'Error'
+      }));
+      return res.status(status).json({ error: message, code, reference });
+    }
     return res.status(status).json({ error: message });
   }
 }

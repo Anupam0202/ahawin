@@ -105,7 +105,8 @@ Full detail: [`docs/architecture.md`](docs/architecture.md).
 - Image and text are analyzed together
 - JSON schema constrains the output
 - Semantic invariants reject contradictory or incomplete results
-- Analysis timeout: 28 seconds
+- Analysis timeout: 24 seconds, leaving headroom inside Vercel's 30-second function limit
+- Provider failures are classified and logged with redacted diagnostics, a safe error code, and a random reference
 - Custom analysis fails honestly by default; it does not silently become the sample
 - The Gemini key is server-only and must never use a browser-visible prefix
 
@@ -143,9 +144,9 @@ npm run verify
 Current measured local result:
 
 - syntax checks: pass,
-- unit tests: **18/18 pass**,
+- unit tests: **22/22 pass**,
 - deterministic evaluation: **17/17 pass**,
-- deployment-layout regression: **pass** (`public/` output and Node-safe browser import),
+- deployment-layout regression: **pass** (`framework: null`, no production `start` script, `public/` output, and Node-safe browser import),
 - secret-pattern scan: pass,
 - desktop critical flow: pass,
 - mobile critical flow: pass,
@@ -198,6 +199,7 @@ See [`SECURITY.md`](SECURITY.md).
 - [`docs/demo-script.md`](docs/demo-script.md)
 - [`docs/submission-checklist.md`](docs/submission-checklist.md)
 - [`docs/release-guide.md`](docs/release-guide.md)
+- [`docs/live-analysis-runbook.md`](docs/live-analysis-runbook.md)
 
 ## Credits
 

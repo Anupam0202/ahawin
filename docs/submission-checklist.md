@@ -1,15 +1,15 @@
 # Submission checklist
 
-Status date: **3 September 2026**.
+Status date: **4 September 2026**.
 
 ## Deliverables
 
 | Deliverable | Status | Evidence / next action |
 |---|---|---|
-| Functional project | Done locally | Guided desktop/mobile/keyboard flows pass |
-| Source code | Done locally | Clean delivery ZIP |
-| GitHub repository | Connected to Vercel | Push the version 1.1.1 fix to the existing `main` branch |
-| Vercel production app | Blocked | Import GitHub repo, configure key, smoke-test |
+| Functional project | Done locally and guided production | Guided desktop/mobile/keyboard flows pass |
+| Source code | Done locally | Clean version 1.1.3 delivery ZIP |
+| GitHub repository | Connected | `main` reached commit `69ea3bd`; push version 1.1.3 diagnostics next |
+| Vercel production app | Partial | Static app and health pass; live Gemini analysis still needs repair verification |
 | Two-minute script | Done | `demo-script.md` |
 | Recorded/uploaded video | Blocked | Record after deployment; `AhaWin-2min-demo.mp4` |
 
@@ -37,7 +37,7 @@ Status date: **3 September 2026**.
 - [x] Central model, timeout, input/media bounds.
 - [x] Safe text rendering, rate limit, CSP, privacy controls.
 - [x] Responsive UI, dark theme, visible focus, reduced motion.
-- [x] 18/18 unit tests; 17/17 deterministic cases.
+- [x] 22/22 unit tests; 17/17 deterministic cases.
 - [x] 11/11 HTTP/security checks.
 - [x] Desktop, mobile, keyboard, no-key, and reduced-motion browser paths.
 - [x] Secret scan and static link/accessibility checks.
@@ -61,10 +61,11 @@ Status date: **3 September 2026**.
 
 ## Vercel gate
 
-- [ ] Import GitHub repository.
-- [ ] Configure `GEMINI_API_KEY` securely for required environments.
+- [x] Import GitHub repository.
+- [x] Configure a non-empty `GEMINI_API_KEY` server value for production; validity and authorization remain unverified.
 - [ ] Confirm `ALLOW_DEMO_FALLBACK=false`; redeploy after environment changes.
-- [ ] Health endpoint says configured without disclosing key.
+- [x] Health endpoint returns 200 and says configured without disclosing key.
+- [ ] Set `GEMINI_MODEL=gemini-3.8-flash`, deploy version 1.1.3, and complete one typed and one image request.
 - [ ] Guided/live/error/mobile/keyboard paths pass on production.
 - [ ] Real URL added to README and submission form.
 
@@ -75,4 +76,4 @@ Status date: **3 September 2026**.
 3. Open video signed out and scrub start/middle/end.
 4. Paste the three real links into the form, proofread, submit, and save the receipt.
 
-Remaining blockers are account- or credential-bound: pushing the fix, corrected Vercel redeployment, Gemini configuration/live evaluation, video recording/upload, and final team credits.
+Remaining blockers are account- or credential-bound: pushing version 1.1.3, validating the Gemini key/model through a live request, video recording/upload, and final team credits.

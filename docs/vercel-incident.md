@@ -13,12 +13,14 @@ at init (file:///var/task/app.mjs:486:15)
 
 The browser-only root file `app.js` used a conventional server entrypoint name. Vercel packaged and executed it as a Node function, so browser globals such as `matchMedia`, `document`, and `location` were unavailable. The failure was deployment classification, not a Gemini failure.
 
-## Fix in version 1.1.1
+## Fix in version 1.1.2
 
 - Moved all browser assets to `public/`.
 - Renamed `app.js` to `public/ui.js`.
 - Moved the local-only server to `scripts/local-server.mjs`.
+- Set `framework` to `null` in `vercel.json`, which officially selects **Other** and overrides a persisted project preset.
 - Set `outputDirectory` to `public` in `vercel.json`.
+- Removed the production `start` script; local serving uses `npm run local`.
 - Kept `api/` as the only Vercel function directory.
 - Guarded browser initialization with `typeof window` and `typeof document`.
 - Guarded `window.matchMedia` itself.
@@ -27,14 +29,16 @@ The browser-only root file `app.js` used a conventional server entrypoint name. 
 ## Measured after the fix
 
 - Full `npm run verify`: pass.
-- Deployment-layout regression: pass.
+- Deployment-layout regression: pass, including `framework: null` and absence of a production `start` script.
 - Unit tests: 18/18 pass.
 - Deterministic checks: 17/17 pass.
 - HTTP/security checks: 11/11 pass.
 - Desktop, mobile, keyboard, reduced-motion, and error browser flows: pass.
 - Unexpected console errors and tested horizontal overflow: zero.
 
-These are local measurements. Production remains unverified until this commit is pushed and Vercel creates a new deployment.
+Production deployment `dpl_EiHhiiYfLvCbvrhP8J6XKUStbJ2g` subsequently served the static application and returned HTTP 200 from `/api/health`, confirming that the deployment-classification failure is fixed.
+
+The same deployment returned HTTP 502 from `POST /api/analyze`. That is a separate Gemini integration incident, not a recurrence of `matchMedia`. Version 1.1.2 suppressed the upstream exception, so its empty runtime-log message cannot identify the exact provider cause. Version 1.1.3 adds safe diagnostics, environment normalization, and a 24-second timeout. See `live-analysis-runbook.md`.
 
 ## Redeploy
 

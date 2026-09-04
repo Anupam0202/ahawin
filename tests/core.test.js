@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzePayload, createDemoResult, evaluateTeachback, normalizeInput } from '../lib/core.js';
+import { analyzePayload, createDemoResult, evaluateTeachback, normalizeInput, resolveGeminiConfig } from '../lib/core.js';
 import { createRateLimiter } from '../lib/rate-limit.js';
 
 function modelFixture() {
@@ -60,6 +60,16 @@ test('typed evidence is trimmed, bounded, and normalized', () => {
 test('unknown subjects fail into a safe general category', () => {
   const input = normalizeInput({ subject: '<script>', problem: 'A valid prompt' });
   assert.equal(input.subject, 'General STEM');
+});
+
+test('copied environment values are trimmed and unquoted', () => {
+  const config = resolveGeminiConfig({
+    GEMINI_API_KEY: '  "unit-test-credential"  ',
+    GEMINI_MODEL: " 'gemini-3.8-flash' "
+  });
+  assert.equal(config.apiKey, 'unit-test-credential');
+  assert.equal(config.model, 'gemini-3.8-flash');
+  assert.equal(config.geminiConfigured, true);
 });
 
 test('unsupported image formats fail closed', () => {
@@ -154,6 +164,66 @@ test('analysis fallback is explicit and opt-in only', { concurrency: false }, as
     assert.equal(fallback.meta.mode, 'demo-fallback');
     assert.equal(fallback.meta.poweredByGemini, false);
     assert.match(fallback.meta.warning, /not an analysis of the submitted work/i);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('provider authentication errors expose a safe code and redact credentials', { concurrency: false }, async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => new Response(JSON.stringify({
+    error: { message: 'API key not valid. key=not-a-real-secret' }
+  }), {
+    status: 403,
+    headers: { 'Content-Type': 'application/json' }
+  });
+  try {
+    await assert.rejects(
+      analyzePayload({ subject: 'Algebra', problem: 'x+1=2' }, { GEMINI_API_KEY: 'unit-test-credential' }),
+      error => {
+        assert.equal(error.status, 502);
+        assert.equal(error.code, 'GEMINI_AUTH');
+        assert.equal(error.upstreamStatus, 403);
+        assert.doesNotMatch(error.diagnostic, /not-a-real-secret/);
+        return true;
+      }
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('unavailable model errors identify deployment configuration', { concurrency: false }, async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => new Response(JSON.stringify({
+    error: { message: 'Model gemini-missing is not found.' }
+  }), {
+    status: 404,
+    headers: { 'Content-Type': 'application/json' }
+  });
+  try {
+    await assert.rejects(
+      analyzePayload({ subject: 'Algebra', problem: 'x+1=2' }, { GEMINI_API_KEY: 'unit-test-credential' }),
+      error => error.status === 502 && error.code === 'GEMINI_MODEL' && error.upstreamStatus === 404
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('malformed structured output is classified without exposing content', { concurrency: false }, async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => new Response(JSON.stringify({
+    candidates: [{ content: { parts: [{ text: 'not-json' }] } }]
+  }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
+  try {
+    await assert.rejects(
+      analyzePayload({ subject: 'Algebra', problem: 'x+1=2' }, { GEMINI_API_KEY: 'unit-test-credential' }),
+      error => error.status === 502 && error.code === 'GEMINI_INVALID_OUTPUT'
+    );
   } finally {
     global.fetch = originalFetch;
   }

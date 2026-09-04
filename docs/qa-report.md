@@ -1,13 +1,13 @@
 # QA report
 
-Run date: **3 September 2026**.
+Run date: **4 September 2026**.
 
 ## Measured results
 
 | Gate | Command / method | Result |
 |---|---|---|
 | JavaScript syntax | `npm run check` | Pass |
-| Unit tests | `npm test` | **18/18 pass** |
+| Unit tests | `npm test` | **22/22 pass** |
 | Deterministic evaluation | `npm run eval` | **17/17 pass; 0 live calls** |
 | Secret patterns | `scripts/secret-scan.sh` | `SECRET-SCAN-PASS` |
 | HTTP/security | local Node server + scripted requests | **11/11 pass** |
@@ -41,6 +41,7 @@ Guided invariant; criteria/transfer; input bounds; subject/media allowlists; wea
 8. File input lacked an explicit label in static analysis; added a screen-reader label.
 9. Screenshot-only fixed overlays were hidden in the capture harness; product skip-link behavior remains tested.
 10. Vercel production returned 500 because root `app.js` was auto-detected and executed as Node, where `matchMedia` does not exist. Static assets now live under `public/`, the browser entrypoint is `ui.js`, Vercel explicitly uses `outputDirectory: "public"`, the local server moved under `scripts/`, browser initialization is environment-guarded, and a deployment-layout regression check imports the browser module under Node.
+11. The corrected deployment served the app and health endpoint but live analysis returned 502 with empty Vercel messages. Provider exceptions were being discarded. Version 1.1.3 adds environment-value normalization, safe provider error classification, redacted structured logging, response references, and four regression tests.
 
 ## Visual review
 
@@ -60,7 +61,7 @@ No runtime package dependencies. API key remains server-side. Inputs are bounded
 - Real Gemini 15-case evaluation and latency/cost measurement: no key.
 - Safari/Firefox/device-matrix testing.
 - Slow live-model network simulation.
-- GitHub CI execution and corrected Vercel redeployment: repository/account authentication is unavailable here. The supplied production logs identified the failure; the fix is measured locally but the new production deployment remains unverified.
+- Credentialed live Gemini request: production now serves the static app and health endpoint, but the current key/model path returned 502. Version 1.1.3 must be deployed and the resulting safe diagnostic or successful response verified.
 - Classroom accessibility audit and learner-outcome study.
 
 No blocked result is reported as passed.

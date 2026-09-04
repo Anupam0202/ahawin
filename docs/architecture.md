@@ -60,7 +60,9 @@ The application uses Google's official HTTPS API contract directly through one a
 - Use image + text in one request when an image is present.
 - Use structured JSON output with a schema and low temperature.
 - Validate semantics after parsing; schema compliance alone is insufficient.
-- Bound the analysis request to 28 seconds.
+- Bound the analysis request to 24 seconds, leaving six seconds of headroom inside Vercel's 30-second function limit.
+- Trim surrounding whitespace and accidental matching quotes from server environment values before use.
+- Classify provider failures and emit only redacted, structured diagnostics with a random reference; never log learner evidence or credentials.
 - Use a shorter model-backed teach-back rubric check when credentials exist.
 - Fall back from the rubric check to a transparent local criterion matcher if that secondary call fails.
 - Do **not** fall back from custom analysis to unrelated sample content by default.
@@ -121,7 +123,7 @@ Local server and Vercel configuration include:
 
 ## Deployment
 
-Vercel serves only `public/` as static output through `outputDirectory: "public"`; files under `api/` are the only Node serverless functions. The browser entrypoint is deliberately named `ui.js`, and its initialization is guarded against non-browser imports. This prevents Vercel from auto-detecting the former root `app.js` as a Node entrypoint. There is no build command. Required production secret: `GEMINI_API_KEY`. Optional configuration: `GEMINI_MODEL` and `ALLOW_DEMO_FALLBACK` (recommended `false`).
+Vercel serves only `public/` as static output through `outputDirectory: "public"`; files under `api/` are the only Node serverless functions. `framework: null` explicitly overrides any persisted Node.js project preset with **Other**, and `package.json` has no production `start` script. The browser entrypoint is deliberately named `ui.js`, and its initialization is guarded against non-browser imports. Together these controls prevent Vercel from auto-detecting a Node server entrypoint. There is no build command. Required production secret: `GEMINI_API_KEY`. Optional configuration: `GEMINI_MODEL` and `ALLOW_DEMO_FALLBACK` (recommended `false`).
 
 ## Reliability limitations
 

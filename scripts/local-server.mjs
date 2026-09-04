@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyzePayload, DEFAULT_MODEL } from '../lib/core.js';
+import { analyzePayload, resolveGeminiConfig } from '../lib/core.js';
 import { analyzeRateLimit, clientKeyFromRequest } from '../lib/rate-limit.js';
 
 const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -78,11 +78,13 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (req.method === 'GET' && url.pathname === '/api/health') {
+      const config = resolveGeminiConfig(process.env);
       return json(res, 200, {
         ok: true,
-        geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
-        model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
-        mode: process.env.GEMINI_API_KEY ? 'live-ready' : 'transparent-demo',
+        geminiConfigured: config.geminiConfigured,
+        model: config.model,
+        mode: config.geminiConfigured ? 'live-configured' : 'transparent-demo',
+        credentialCheck: 'presence-only',
         timestamp: new Date().toISOString()
       });
     }
@@ -100,11 +102,23 @@ const server = http.createServer(async (req, res) => {
     return json(res, 405, { error: 'Method not allowed.' });
   } catch (error) {
     const status = Number(error?.status) || (error?.code === 'ENOENT' ? 404 : 500);
-    return json(res, status, { error: error?.expose || status < 500 ? error.message : 'Something went wrong safely.' });
+    if (status >= 500) {
+      console.error(JSON.stringify({
+        event: 'analysis_failed',
+        code: error?.code || 'ANALYSIS_FAILED',
+        status,
+        upstreamStatus: error?.upstreamStatus || null,
+        diagnostic: error?.diagnostic || error?.name || 'Error'
+      }));
+    }
+    const body = { error: error?.expose || status < 500 ? error.message : 'Something went wrong safely.' };
+    if (status >= 500) body.code = error?.code || 'ANALYSIS_FAILED';
+    return json(res, status, body);
   }
 });
 
 server.listen(PORT, '127.0.0.1', () => {
+  const config = resolveGeminiConfig(process.env);
   console.log(`AhaWin: http://127.0.0.1:${PORT}`);
-  console.log(process.env.GEMINI_API_KEY ? `Gemini ${process.env.GEMINI_MODEL || DEFAULT_MODEL} configured` : 'Guided demo mode; add GEMINI_API_KEY for live analysis');
+  console.log(config.geminiConfigured ? `Gemini ${config.model} configured (presence only)` : 'Guided demo mode; add GEMINI_API_KEY for live analysis');
 });

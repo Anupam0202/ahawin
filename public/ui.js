@@ -36,7 +36,7 @@ async function checkHealth() {
     const health = await response.json();
     if (!response.ok) throw new Error('Health check failed');
     $('#apiChip').classList.toggle('live', health.geminiConfigured);
-    $('#apiStatus').textContent = health.geminiConfigured ? 'Gemini ready' : 'Guided demo ready';
+    $('#apiStatus').textContent = health.geminiConfigured ? 'Gemini configured' : 'Guided demo ready';
   } catch {
     $('#apiStatus').textContent = 'Open through local server';
   }
